@@ -239,13 +239,13 @@ TOOLS = [
                 # without rebuilding the image. Mirrors asr_model in asr.py.
                 "tts_engine": {"type": "string",
                                "enum": ["vits2-zh-en", "matcha-zh-en", "mms-th",
-                                        "kokoro-multi"],
+                                         "kokoro-multi", "serena-zh-en"],
                                "description": "TTS engine, named <model>-<languages> to match "
                                               "asr_model (vits2-zh-en = VITS2 on TensorRT, "
                                               "matcha-zh-en = Matcha-icefall, "
                                               "mms-th = MMS Thai, "
                                               "kokoro-multi = Kokoro-82M v1.0)",
-                               "default": "vits2-zh-en", "scope": "shared"},
+                                "default": "serena-zh-en", "scope": "shared"},
                 # matcha-zh-en, mms-th and kokoro-multi only — vits2-zh-en is a
                 # TensorRT engine and never touches ONNX Runtime, so this field does
                 # nothing for it. Matcha's weights are fp32, so both devices load the
@@ -1355,6 +1355,17 @@ def _build_tts_adapter(cfg: dict, on_status=None) -> TTSAdapter:
         cfg.get('device') or ENGINE_DEVICE_DEFAULTS.get(engine),
         cfg.get('hw_provider'),
     )
+    if engine == 'serena-zh-en':
+        from pathlib import Path
+        from utils.serena_release import ensure_release
+        ensure_release(model_dir, cfg.get('serena_release_manifest') or
+            str(Path(__file__).resolve().parents[1] / 'serena-release.json'), on_status)
+        from plugins.serena_tts import SerenaTTSAdapter
+        return SerenaTTSAdapter(model_dir, speed,
+            language=cfg.get('tts_language') or cfg.get('language') or 'auto',
+            vocoder_backend=cfg.get('serena_vocoder_backend', 'ort-cuda'),
+            first_chunk_tokens=cfg.get('serena_first_chunk_tokens', 48),
+            chunk_tokens=cfg.get('serena_chunk_tokens', 48))
     if engine == 'mms-th':
         return MmsThaiTTSAdapter(
             model_dir, speaker_id, speed, device,
@@ -2151,7 +2162,7 @@ class SherpaOnnxTTSPlugin:
         return self._adapter.synthesize(text)
 
 
-DEFAULT_TTS_ENGINE = "vits2-zh-en"
+DEFAULT_TTS_ENGINE = "serena-zh-en"
 # `<model>-<languages>`, the shape `asr_model` in plugins/asr.py already uses
 # (x-asr-zh-en, parakeet-en, sensevoice-small). Two reasons to match it rather
 # than invent a second convention: the dashboard renders the raw enum string, so
@@ -2160,13 +2171,14 @@ DEFAULT_TTS_ENGINE = "vits2-zh-en"
 # `matcha` and `mms-th` both run on sherpa-onnx.
 #
 # Language codes, not country codes: `zh`, not `cn`.
-TTS_ENGINES = ("vits2-zh-en", "matcha-zh-en", "mms-th", "kokoro-multi")
+TTS_ENGINES = ("vits2-zh-en", "matcha-zh-en", "mms-th", "kokoro-multi", "serena-zh-en")
 # What each engine can speak, in the codes the rest of this file uses. Answered
 # by action=support_language straight from the facade: it is a property of the
 # engine, not of a loaded model, so it works while an engine is still loading.
 # For vits2-zh-en these are also the values speak's reading_language accepts
 # besides "auto"; kokoro-multi's are its tts_language setting.
 ENGINE_LANGUAGES = {
+    "serena-zh-en": ("zh", "en"),
     "vits2-zh-en": ("zh", "en"),
     "matcha-zh-en": ("zh", "en"),
     "mms-th": ("th",),
@@ -2189,6 +2201,7 @@ ENGINE_ALIASES = {
 # Where each engine keeps its own model files. Used for any engine other than
 # the one config.yaml was written for; see TTSPlugin._model_dir_for.
 ENGINE_MODEL_DIRS = {
+    "serena-zh-en": "/models/serena",
     "vits2-zh-en": "/models/vits2",
     # Kept at the old path: it is already populated on deployed robots and
     # renaming it would force every one of them to re-download the Matcha pair.
@@ -2212,6 +2225,7 @@ ENGINE_MODEL_DIRS = {
 # device field would be worse — the value is stated in the field description
 # instead.
 ENGINE_DEVICE_DEFAULTS = {
+    "serena-zh-en": "gpu",
     "kokoro-multi": "gpu",
 }
 # How long an `action=config` engine switch waits for the new engine before

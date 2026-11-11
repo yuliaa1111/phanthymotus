@@ -92,9 +92,10 @@ plugins:
 
   tts:
     enabled: true
-    engine: vits2-zh-en
+    engine: serena-zh-en
     backend: trt
-    model_dir: /models/vits2
+    model_dir: /models/serena
+    serena_vocoder_backend: ort-cuda
     # vits2-zh-en and mms-th support 0 only. For kokoro-multi this is an index
     # *within* the selected language — 0 is that language's first voice — so the
     # voice moves with `language` and cannot end up mismatched with it. The global

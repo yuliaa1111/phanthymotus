@@ -1,0 +1,14 @@
+{
+  "candidate": "serena-jp6-13554-mixed-v1",
+  "bytes": 444096980,
+  "sha256": "83eff97d96f0196c69074827fbebcc507c5e0bd7d42bfc1113684f5b082ded62",
+  "url": "http://172.28.4.81:34567/yuliaaaaaa1111/xiaoyou-tts/serena-jp6-13554-mixed-v1/serena-jp6-13554-mixed-v1.tar.gz",
+  "platform": {
+    "architecture": "aarch64",
+    "python": "3.10",
+    "tensorrt": "10.4.0",
+    "jp_version": "6"
+  },
+  "admission_ready": false,
+  "pending": ["three-concurrent-service first-audio admission", "GitHub fork authorization", "submission"]
+}

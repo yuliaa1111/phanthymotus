@@ -1,0 +1,18 @@
+# Candidate config: runtime artifacts are mounted, not stored in git.
+# Use CONFIG_PATH to select this file during isolated JP6 testing.
+mcp_port: 15880
+ws_port: 15881
+plugins:
+  tts:
+    enabled: true
+    engine: serena-zh-en
+    model_dir: /models/serena
+    device: gpu
+    language: auto
+    speed: 1.0
+    warmup: true
+    serena_vocoder_backend: ort-cuda
+  echo_cancellation:
+    enabled: false
+  audio_mixer:
+    enabled: false
