@@ -586,7 +586,12 @@ COPY perception/main.py    /work/main.py
 COPY perception/plugins/   /work/plugins/
 COPY perception/utils/     /work/utils/
 COPY perception/config.yaml /work/config.yaml
+COPY perception/serena-release.json /work/serena-release.json
 COPY perception/deploy/    /deploy/
+
+# The cold-start downloader needs this manifest even when /models is empty.
+# Validate the packaged file at build time so a broken release fails the build.
+RUN python3 -m json.tool /work/serena-release.json >/dev/null
 
 # ── Thai frontend self-check, on the real interpreter ──────────────────────────
 # Runs the frontend that was just copied in, on the Python this image actually

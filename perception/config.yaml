@@ -137,7 +137,7 @@ plugins:
     # CUDA provider falls back per node on quantised ops), so it carries its own
     # default in ENGINE_DEVICE_DEFAULTS — gpu. An explicit `cpu` here would apply
     # to every engine and quietly override that.
-    device: cpu
+    device: gpu
     # kokoro-multi only: pronunciation language. One of en-us, en-gb, zh, ja, es,
     # fr, it, pt-br, hi — every language Kokoro v1.0 has voices for. Read per
     # generate() call, so changing it costs nothing.
@@ -152,7 +152,8 @@ plugins:
     #
     # Only en-us / en-gb / zh have been listened to — sherpa-onnx documents English
     # and Chinese as this model's supported pair, so the rest are best-effort.
-    language: en-us
+    # Serena accepts auto, zh or en; auto handles the bilingual evaluation.
+    language: auto
 
   vop:
     enabled: true
